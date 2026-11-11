@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Unofficial helper for KMB colleagues to view invigilation times and check whether a swap is possible. Semester examinations, 30 Nov – 10 Dec 2026.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="KMB Invigilation Desk">
+<meta property="og:description" content="Find your invigilation duties and check who you can swap with. Kolej MARA Banting, 30 Nov – 10 Dec 2026.">
+<meta property="og:url" content="https://kmb-digital.github.io/kmb-invigilation-dec2026/">
+<meta property="og:image" content="https://kmb-digital.github.io/kmb-invigilation-dec2026/thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://kmb-digital.github.io/kmb-invigilation-dec2026/thumbnail.png">
+<title>KMB Invigilation Desk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one navy band (brand, nav, and a hero search on the landing page), then a single content column.
+   The personal timetable is a day-by-time grid on wide screens and a day list on phones. */
+:root{
+  --bg:#f4efe3; --surface:#fffdf7; --surface2:#f8f1e1; --ink:#14274e; --muted:#5a6684; --line:#ddd3bc;
+  --navy:#14274e; --navy-ink:#f6efdc; --navy-soft:#b9c3dc; --accent:#b8562a; --accent-ink:#ffffff; --amber:#e3a63a;
+  --ok:#256f4e; --ok-bg:#dff0e6; --warn:#7a5000; --warn-bg:#fbeecb; --bad:#a82f25; --bad-bg:#f9dfdb; --info:#1f3b78; --info-bg:#e4e9f5;
+  --serif:Georgia,'Times New Roman',serif; --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1730; --surface:#15224a; --surface2:#1a2a58; --ink:#f3ecdc; --muted:#a3adc8; --line:#2c3d6e;
+  --navy:#0a1229; --navy-ink:#f3ecdc; --navy-soft:#a3adc8; --accent:#ec8f5e; --accent-ink:#1a1206; --amber:#e8b14f;
+  --ok:#6fcf9f; --ok-bg:#16382f; --warn:#f0c15a; --warn-bg:#3b3012; --bad:#ff8f80; --bad-bg:#40181a; --info:#a9bff2; --info-bg:#1d2e5e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1730; --surface:#15224a; --surface2:#1a2a58; --ink:#f3ecdc; --muted:#a3adc8; --line:#2c3d6e;
+  --navy:#0a1229; --navy-ink:#f3ecdc; --navy-soft:#a3adc8; --accent:#ec8f5e; --accent-ink:#1a1206; --amber:#e8b14f;
+  --ok:#6fcf9f; --ok-bg:#16382f; --warn:#f0c15a; --warn-bg:#3b3012; --bad:#ff8f80; --bad-bg:#40181a; --info:#a9bff2; --info-bg:#1d2e5e; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100%}
+h1,h2,h3{font-family:var(--serif);font-weight:700;text-wrap:balance;margin:0}
+p{margin:0}
+button,select,textarea,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+.site{background:var(--navy);color:var(--navy-ink)}
+.site .wrap{display:flex;flex-wrap:wrap;gap:8px 28px;align-items:center;justify-content:space-between;padding-block:12px 0}
+.brandbtn{display:flex;align-items:center;gap:14px;background:none;border:0;color:inherit;text-align:left;padding:0 0 12px}
+.logo{height:52px;width:auto;flex:none;display:block}
+.mark{width:42px;height:42px;border-radius:50%;border:2px solid var(--amber);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:14px;letter-spacing:.02em;color:var(--amber);flex:none}
+.brandbtn b{display:block;font-family:var(--serif);font-size:21px;line-height:1.15}
+.brandbtn span.s{display:block;font-size:12px;color:var(--navy-soft)}
+#nav{display:flex;gap:2px;overflow-x:auto;max-width:100%}
+.nl{background:none;border:0;border-bottom:3px solid transparent;color:var(--navy-soft);padding:12px 12px 10px;font-weight:500;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.nl:hover{color:var(--navy-ink)}
+.nl[aria-current="page"]{color:var(--navy-ink);border-bottom-color:var(--amber)}
+.count{background:var(--accent);color:var(--accent-ink);border-radius:10px;font-size:11.5px;font-weight:600;padding:0 7px;min-width:20px;text-align:center}
+.notice{background:var(--warn-bg);color:var(--warn);font-size:13px}
+.notice .wrap{padding-block:7px}
+
+/* hero + page bands */
+.band{background:var(--navy);color:var(--navy-ink)}
+.band.page .wrap{padding-block:22px 26px;display:flex;flex-direction:column;gap:6px}
+.band.page h2{font-size:30px}
+.band.page p{color:var(--navy-soft);max-width:70ch}
+.band.hero .wrap{padding-block:34px 36px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);font-weight:600}
+.hero-t{font-size:clamp(30px,5.4vw,46px);line-height:1.08;max-width:18ch}
+.hero-s{color:var(--navy-soft);max-width:58ch;font-size:16px}
+.search{position:relative;width:100%;max-width:640px}
+.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search input{width:100%;height:56px;border-radius:8px;border:2px solid transparent;background:var(--surface);color:var(--ink);padding:0 16px 0 48px;font-size:17px}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{outline:none;border-color:var(--amber)}
+.suggest{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.3);max-height:340px;overflow-y:auto;z-index:20;padding:4px}
+.sg{display:flex;justify-content:space-between;gap:10px;align-items:baseline;width:100%;text-align:left;background:none;border:0;border-radius:5px;padding:9px 12px}
+.sg.on,.sg:hover{background:var(--surface2)}
+.sg small{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.sg-none{padding:10px 12px;color:var(--muted);font-size:14px}
+.try{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--navy-soft)}
+.pillbtn{background:rgba(255,255,255,.1);color:var(--navy-ink);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:3px 12px;font-size:13px}
+.pillbtn:hover{background:rgba(255,255,255,.2)}
+.dayrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.dp{font-family:var(--mono);font-size:12px;background:transparent;border:1px solid rgba(255,255,255,.22);border-radius:4px;padding:5px 9px;color:var(--navy-soft);cursor:pointer}
+.dp:hover,.dp:focus-visible{background:rgba(255,255,255,.12);border-color:var(--amber);color:#fff}
+.dayhint{margin-top:16px;font-size:13px;color:var(--navy-soft)}
+.dayhint+.dayrow{margin-top:8px}
+.pdfrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;font-size:14px;color:var(--navy-soft)}
+.pdfrow .pl{flex-basis:100%}
+.pdfrow button{font:inherit;cursor:pointer;background:transparent;color:#fff;border:1px solid var(--amber);border-radius:999px;padding:6px 13px;font-weight:600;font-size:13px;white-space:nowrap}
+.pdfrow button:hover,.pdfrow button.on{background:var(--amber);color:var(--navy)}
+.origv{margin-top:12px;background:var(--surface2);border-radius:8px;padding:10px;color:var(--ink)}
+.origv .ot{font-size:13px;color:var(--muted);margin-bottom:8px}
+.origv .op{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:4px;background:#fff;margin-bottom:10px}
+.origv .op img{display:block;min-width:820px;width:100%;height:auto}
+
+main.wrap{padding-block:26px 56px;display:flex;flex-direction:column;gap:28px}
+h3{font-size:19px}
+.sec{display:flex;flex-direction:column;gap:12px}
+.sec-h{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between}
+.sec-h p{color:var(--muted);font-size:13.5px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.stat b{display:block;font-family:var(--serif);font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--muted)}
+.stat.bad b{color:var(--bad)} .stat.warn b{color:var(--warn)} .stat.good b{color:var(--ok)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.step .n{font-family:var(--serif);font-size:26px;color:var(--accent);line-height:1}
+.step b{font-size:16px}
+.step p{color:var(--muted);font-size:14px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card.bad{border-left:4px solid var(--bad)} .card.warn{border-left:4px solid var(--amber)} .card.ok{border-left:4px solid var(--ok)}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.row>*{min-width:0}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:8px 14px;font-weight:500;font-size:14px}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.sm{padding:4px 10px;font-size:13px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.mono{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;border-radius:10px;padding:1px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)} .pill.info{background:var(--info-bg);color:var(--info)}
+.pill.plain{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+.batch{font-size:11.5px;font-weight:600;border-radius:3px;padding:1px 6px;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+.batch.S3{background:var(--info-bg);color:var(--info)} .batch.S1{background:var(--warn-bg);color:var(--warn)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.dline{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}
+.dline .dd{font-weight:600} .dline .ds{font-weight:500} .dline .dv{color:var(--muted);font-size:13px}
+.note{font-size:13.5px;padding:7px 10px;border-radius:4px}
+.note.warn{background:var(--warn-bg);color:var(--warn)} .note.bad{background:var(--bad-bg);color:var(--bad)} .note.ok{background:var(--ok-bg);color:var(--ok)} .note.info{background:var(--info-bg);color:var(--info)}
+.empty{border:1px dashed var(--line);border-radius:6px;padding:18px;color:var(--muted);text-align:center}
+details summary{cursor:pointer;font-weight:600;padding:6px 0}
+
+/* personal timetable */
+.who h3.name{font-size:28px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid}
+.legend i.s3{background:var(--info-bg);border-color:var(--info)} .legend i.s1{background:var(--warn-bg);border-color:var(--warn)} .legend i.cl{background:var(--bad-bg);border-color:var(--bad)}
+.tt-scroll{display:none;overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.tt{min-width:980px;--rh:34px}
+.tt-head,.tt-body{display:grid;grid-template-columns:52px 1fr}
+.tt-days{display:grid;grid-template-columns:repeat(9,1fr)}
+.tt-dh{padding:8px 4px;text-align:center;font-size:12.5px;border-left:1px solid var(--line);border-bottom:2px solid var(--navy);background:var(--surface2);line-height:1.25}
+.tt-dh b{display:block;font-family:var(--serif);font-size:15px}
+.tt-head>div:first-child{border-bottom:2px solid var(--navy);background:var(--surface2)}
+.tt-axis{position:relative;height:calc(19*var(--rh))}
+.tt-axis span{position:absolute;right:6px;transform:translateY(-50%);font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tt-cols{position:relative;display:grid;grid-template-columns:repeat(9,1fr);height:calc(19*var(--rh))}
+.hl{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.7}
+.tt-col{position:relative;border-left:1px solid var(--line)}
+.blk{position:absolute;border-radius:4px;border:1px solid;padding:4px 6px;font-size:12px;line-height:1.3;text-align:left;overflow:hidden;display:flex;flex-direction:column;gap:1px}
+.blk b{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-weight:600}
+.blk span{font-family:var(--mono);font-size:10.5px;opacity:.9}
+.blk.S3{background:var(--info-bg);border-color:var(--info);color:var(--info)}
+.blk.S1{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.blk.clash{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);border-width:2px}
+.blk.chief::after{content:'K';position:absolute;right:4px;top:3px;font-size:10px;font-weight:700;background:var(--navy);color:var(--navy-ink);border-radius:3px;padding:0 4px}
+.blk:hover{filter:brightness(.96);z-index:2}
+.tt-list{display:flex;flex-direction:column;gap:18px}
+.dayh{display:flex;gap:10px;align-items:baseline;border-bottom:2px solid var(--navy);padding-bottom:4px}
+.dayh h3{font-size:18px}
+.duty{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;margin-top:8px}
+.duty.clash{border-color:var(--bad);background:var(--bad-bg)}
+@media (min-width:760px){.tt-scroll{display:block}.tt-list{margin-top:18px}}
+.duty .co .cl{min-width:68px;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.duty .co{margin-top:6px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.duty .co.alone b{color:var(--warn)}
+.duty .cn{font:inherit;font-size:13px;font-weight:600;color:var(--navy);background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer}
+.duty .cn small{margin-left:4px;font-size:10px;background:var(--navy);color:#fff;border-radius:3px;padding:0 4px}
+.duty .cn:hover{border-color:var(--navy)}
+
+/* swap checker + roster */
+.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.ctl label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);min-width:0}
+.ctl select,.ctl input[type=search]{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:8px;color:var(--ink);width:100%}
+.ctl label.chk{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.optrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding-top:8px;border-top:1px dashed var(--line)}
+.msg{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:8px;color:var(--ink);font-size:13.5px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.filters label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--muted)}
+.filters select,.filters input{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:7px 9px;min-width:150px;color:var(--ink)}
+.filters .grow{flex:1;min-width:200px} .filters .grow input{width:100%}
+.exam{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.exam-h{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--line)}
+.exam-h .t{font-family:var(--mono);font-size:13px;color:var(--muted)} .exam-h .s{font-weight:600} .exam-h .v{color:var(--muted);font-size:13px}
+.shifts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.shift{padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.shift+.shift{border-left:1px solid var(--line)}
+.shift .w{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.names{display:flex;flex-wrap:wrap;gap:5px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:2px 8px;font-size:13.5px;display:inline-flex;gap:5px;align-items:center}
+button.chip:hover{border-color:var(--accent)}
+.chip.chief{background:var(--navy);border-color:var(--navy);color:var(--navy-ink)}
+.chip.clash{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.chip.hit{outline:2px solid var(--amber)}
+.chip small{font-size:10.5px;font-weight:600;opacity:.8;letter-spacing:.04em}
+@media (max-width:640px){.shift+.shift{border-left:0;border-top:1px solid var(--line)}}
+
+.foot{border-top:1px solid var(--line);background:var(--surface2);color:var(--muted);font-size:13px}
+.foot .wrap{padding-block:18px;display:flex;flex-direction:column;gap:4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:max(18px,env(safe-area-inset-bottom,0px));background:var(--navy);color:var(--navy-ink);border-radius:6px;padding:10px 16px;font-size:14px;z-index:40;max-width:min(92vw,520px);box-shadow:0 4px 18px rgba(0,0,0,.3)}
+@media (prefers-reduced-motion:no-preference){.nl{transition:color .15s}.btn,.sg{transition:background .15s}}
+.avoid{border:0;padding:0;margin:12px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+.avoid legend{font-size:12.5px;color:var(--muted);padding:0;margin-bottom:6px;float:left;width:100%}
+.av{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:3px 11px;font-size:13.5px;background:var(--surface);cursor:pointer}
+.av:has(input:checked){background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.alert{display:flex;gap:10px;align-items:flex-start;background:var(--bad-bg);color:var(--bad);border-left:4px solid var(--bad);border-radius:4px;padding:10px 12px;font-size:14px;line-height:1.45;font-weight:500}
+.alert svg{flex:none;margin-top:2px}
+.alert b{display:block;font-size:15px}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <button class="brandbtn" data-act="tab" data-tab="home" aria-label="Go to the home page">
+      <img class="logo" width="56" height="52" alt="" src="data:image/png;base64,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">
+      <span><b>Invigilation Desk</b><span class="s">Kolej MARA Banting · Semester examinations, December 2026</span></span>
+    </button>
+    <nav id="nav" aria-label="Sections"></nav>
+  </div>
+</header>
+<div class="notice"><div class="wrap">Unofficial helper for colleagues to view invigilation times and check whether a swap is possible. This system does not submit, approve or record any swap.</div></div>
+<section id="hero"></section>
+<main class="wrap" id="view"></main>
+<footer class="foot"><div class="wrap">
+  <span>Built from the Semester 3 (Batch 2025–27) and Semester 1 (Batch 2026–28) invigilation timetables, 30 Nov – 10 Dec 2026.</span>
+  </div></footer>
+<div id="toast"></div>
+<script>
+/* ---------- DATA: transcribed from the two invigilation PDFs ---------- */
+const BATCH = {
+  S3: { short: 'Sem 3', long: 'Semester 3 · Batch 2025–27' },
+  S1: { short: 'Sem 1', long: 'Semester 1 · Batch 2026–28' }
+};
+
+/* [batch, month-day, subject, venue|students, exam time, [[invigilation window, 'NAME*,NAME (TAG)'], ...]]
+   * after a name = (K) chief invigilator */
+const RAW = [
+  // ---- Semester 3 (Batch 2025-27)
+  ['S3','11-30','Business Mgt HL P1','NB1F|30','08:30-10:00',[['08:00-09:10','ASIMA'],['09:05-10:15','ARNILIZA']]],
+  ['S3','11-30','Business Mgt SL P1','Hall 105','08:30-10:00',[['08:00-09:10','ASHIMAH EFFENDY*,DR FAZILA,MARDZIAH,MOHD AFIQ'],['09:05-10:15','AHMAD AKIF*,KAMARIAH,MAZLINA,MARZUNISHAM']]],
+  ['S3','11-30','Digital Society SL P1','LR 33|30','08:30-10:00',[['08:00-09:10','DR ABDUL JAMIR'],['09:05-10:15','AZLINA HEZLIN']]],
+  ['S3','11-30','Business Mgt HL P2','NB1F|30','11:30-13:15',[['11:00-12:15','JOHAINA'],['12:15-13:30','NOR HIDAYAH']]],
+  ['S3','11-30','Business Mgt SL P2','Hall 105','11:30-13:00',[['11:00-12:10','DR MELOR*,FAIZAL HASNUL,NOR AIDA,NUR ASHIKIN Z'],['12:05-13:15','NURMUSHRIFAH*,NORHAIZA,TENGKU HUSNA,NURHAZZIMAH']]],
+  ['S3','11-30','Digital Society SL P2','LR 33|30','11:30-12:45',[['11:00-12:00','MIMI H Z'],['12:00-13:00','MUHAMMAD HAZIMI']]],
+
+  ['S3','12-01','Chemistry HL P2','Hall 67','08:30-11:00',[['08:00-09:40','AZHANA*,JULIANA'],['09:35-11:15','DR FAZLINDA*,DR NURJANAH']]],
+  ['S3','12-01','Chemistry SL P2','LR 33|31','08:30-10:00',[['08:00-09:10','JEREMIAH D'],['09:05-10:15','SURYANI']]],
+  ['S3','12-01','ESS SL P2','NB1F|60','08:30-10:30',[['08:00-09:25','NORMALA*,NOR SYAZANA'],['09:20-10:45','NOR AZIZAH*,DR MOHAMMAD SHIHAM']]],
+  ['S3','12-01','Chemistry HL P1','Hall 67','14:30-16:30',[['14:00-15:25','MUHAMAD AZHA*,ROSLINDAWATI'],['15:20-16:45','MARIAM NABILAH*,NAZLIAH']]],
+  ['S3','12-01','Chemistry SL P1','LR 33|31','14:30-16:00',[['14:00-15:10','AZLINAWATY'],['15:05-16:15','NUR HAZIYATI']]],
+  ['S3','12-01','ESS SL P1','NB1F|60','14:30-15:30',[['14:00-15:45','WAN HAFIZI*,NOOR AIN']]],
+
+  ['S3','12-02','Lang A Lit SL P1 (Malay)','NB1F|94','08:30-09:45',[['08:00-09:00','NOR HIDAYAH*,NORHAIZA,TENGKU HUSNA,ROHANI'],['09:00-10:00','ASIMA*,ASHIMAH EFFENDY,DR FAZILA,NUR SYAKIRAH']]],
+  ['S3','12-02','Lang A Lit SL P1 (Malay)','NBGF|83','08:30-09:45',[['08:00-09:00','NURMUSHRIFAH*,MOHD AFIQ,NURUL HIDAYAH (LAB)'],['09:00-10:00','MARDZIAH*,NURUL AZMIRA,NUR HAZIYATI']]],
+  ['S3','12-02','MAA HL P1','NBGF|74','14:30-16:30',[['14:00-15:25','RAJA NOOR HASNI*,SUBAIDAH,SAKEENA'],['15:20-16:45','NOR HASNI*,NORAINI,NURUL AISYA']]],
+  ['S3','12-02','MAA SL P1','LR 33|34','14:30-16:00',[['14:00-15:10','MOHD ROSELY'],['15:05-16:15','NOOR ASYIKIN A']]],
+  ['S3','12-02','MAI HL P1','NB1F|69','14:30-16:30',[['14:00-15:25','NORA*,NURUL HANIM'],['15:20-16:45','DR AZLINDA,MAZWIYAN']]],
+
+  ['S3','12-03','MAA HL P2','NBGF|74','08:30-10:30',[['08:00-09:25','NURUL AZMIRA*,SH SORAYA,SITI HABSAH'],['09:20-10:45','MOHD RAZIF*,MUSLIZA,NOOR FAIRUS']]],
+  ['S3','12-03','MAA SL P2','LR 33|34','08:30-10:00',[['08:00-09:10','W SALEHATON'],['09:05-10:15','MOHD SYAFIQ AFFANDI']]],
+  ['S3','12-03','MAI HL P2','NB1F|69','08:30-10:30',[['08:00-09:25','AZLINA HEZLIN*,DR ABDUL JAMIR'],['09:20-10:45','MUHAMMAD AZRI*,ROZLIANA']]],
+  ['S3','12-03','English B HL P1','Hall 137','14:30-16:00',[['14:00-15:10','NOR AIDA*,DR MOHAMMAD SHIHAM,DR MELOR,MIMI H Z,NUR SYAKIRAH'],['15:05-16:15','NOR AZIZAH*,NOR SYAZANA,MUHAMMAD HAZIMI,NUR ASHIKIN Z']]],
+  ['S3','12-03','English B HL P1','LR 33|30','14:30-16:00',[['14:00-15:10','KAMARIAH'],['15:05-16:15','AHMAD AKIF']]],
+  ['S3','12-03','English B SL P1','LR 38|10','14:30-15:45',[['14:00-15:00','MAZLINA'],['15:00-16:00','ARNILIZA']]],
+
+  ['S3','12-04','English B HL P2 (Reading)','Hall 137','08:30-09:30',[['08:00-09:45','DR FAZLINDA*,JULIANA,SUBAIDAH,MOHD ROSELY,NOOR AIN']]],
+  ['S3','12-04','English B HL P2 (Reading)','LR 33|30','08:30-09:30',[['08:00-09:45','NUR HAZIYATI']]],
+  ['S3','12-04','English B SL P2 (Reading)','LR 38|10','08:30-09:30',[['08:00-09:45','ROZLIANA']]],
+  ['S3','12-04','Economics HL P1','NB1F|56','11:00-12:15',[['10:30-11:30','AZLINAWATY*,ROSLINDAWATI'],['11:30-12:30','NAZLIAH*,SAKEENA']]],
+  ['S3','12-04','Economics SL P1','LR 33|35','11:00-12:15',[['10:30-11:30','JEREMIAH D'],['11:30-12:30','DR NURJANAH']]],
+
+  ['S3','12-07','Economics HL P2','NB1F|56','08:30-10:15',[['08:00-09:15','MOHD RAZIF*,SITI HABSAH'],['09:15-10:30','MAZLINA*,NOR HIDAYAH']]],
+  ['S3','12-07','Economics SL P2','LR 33|35','08:30-10:15',[['08:00-09:15','W SALEHATON'],['09:15-10:30','NURMUSHRIFAH']]],
+  ['S3','12-07','Biology HL P1','NBGF|37','14:30-16:30',[['14:00-15:25','NOOR FAIRUS'],['15:20-16:45','AHMAD AKIF']]],
+  ['S3','12-07','Biology SL P1','LR 33|29','14:30-16:00',[['14:00-15:10','MOHD SYAFIQ AFFANDI'],['15:05-16:15','NORHAIZA']]],
+  ['S3','12-07','Physics HL P1','LR 39|31','14:30-16:30',[['14:00-15:25','SH SORAYA'],['15:20-16:45','KAMARIAH']]],
+  ['S3','12-07','Physics SL P1','LR 35|20','14:30-16:00',[['14:00-15:10','MUHAMMAD AZRI'],['15:05-16:15','TENGKU HUSNA']]],
+
+  ['S3','12-08','Biology HL P2','NBGF|37','08:30-11:00',[['08:00-09:40','MAZWIYAN'],['09:35-11:15','SURIYANI']]],
+  ['S3','12-08','Biology SL P2','LR 33|29','08:30-10:00',[['08:00-09:10','FAIZAL HASNUL'],['09:05-10:15','NOR HASNI']]],
+  ['S3','12-08','Physics HL P2','LR 39|31','08:30-11:00',[['08:00-09:40','WAN HAFIZI'],['09:35-11:15','MUSLIZA']]],
+  ['S3','12-08','Physics SL P2','LR 35|20','08:30-10:00',[['08:00-09:10','JOHAINA'],['09:05-10:15','MARIAM NABILAH']]],
+  ['S3','12-08','Business Mgt HL P3','NB1F|30','08:30-09:45',[['08:00-09:00','AZHANA'],['09:00-10:00','NOOR ASYIKIN A']]],
+
+  ['S3','12-09','English B SL P2 (Listening)','LR 38|10','08:30-09:15',[['08:00-09:30','ASHIMAH EFFENDY,ROZIAH (AUDIO)']]],
+  ['S3','12-09','English B HL P2 (Listening), session 1','Hall 79','08:30-09:30',[['08:00-09:45','W SALEHATON*,SITI HABSAH,MUHAMMAD AZRI,MARIAM NABILAH (AUDIO)']]],
+  ['S3','12-09','English B HL P2, quarantine for session 1','Quarantine','08:00-09:00',[['08:00-09:00','SYIK,DHIYA,SH SORAYA']]],
+  ['S3','12-09','English B HL P2 (Listening), session 2','Hall 88','10:00-11:00',[['09:45-11:15','ROZLIANA*,NOOR FAIRUS,MARDZIAH,MARZUNISHAM,NURUL HANIM (AUDIO)']]],
+  ['S3','12-09','English B HL P2, quarantine for session 2','Quarantine','09:00-10:00',[['09:00-10:00','KEENA,NORA,DR AZLINDA']]],
+  ['S3','12-09','Economics HL P3','NB1F|56','14:30-16:15',[['14:00-15:15','MOHD RAZIF*,MAZWIYAN'],['15:15-16:30','MOHD SYAFIQ*,ASIMA']]],
+
+  ['S3','12-10','MAA HL P3','NBGF|74','08:30-09:45',[['08:00-09:00','JOHAINA*,FAIZAL HASNUL,NOR AZIZAH'],['09:00-10:00','AZLINA HEZLIN*,DR ABDUL JAMIR,MIMI H Z']]],
+  ['S3','12-10','MAI HL P3','NB1F|69','08:30-09:45',[['08:00-09:00','MUHAMMAD HAZIMI*,DR MUHAMAD SHIHAM'],['09:00-10:00','MUSLIZA*,DR FAZILA']]],
+
+  // ---- Semester 1 (Batch 2026-28)
+  ['S1','11-30','Economics HL P1','NBGF|46','08:30-09:45',[['08:00-09:00','MUSLIZA*,MOHD RAZIF'],['09:00-10:00','NURUL AZMIRA*,MOHD SYAFIQ AFFANDI']]],
+  ['S1','11-30','Economics SL P1','LR 39|8','08:30-09:45',[['08:00-09:00','MAZWIYAN'],['09:00-10:00','NOOR FAIRUS']]],
+  ['S1','11-30','Economics HL P2','NBGF|46','14:30-16:15',[['14:00-15:15','ROZLIANA*,SH SORAYA'],['15:15-16:30','MUHAMAD AZHA*,MUHAMMAD AZRI']]],
+  ['S1','11-30','Economics SL P2','LR 39|8','14:30-16:15',[['14:00-15:15','W SALEHATON'],['15:15-16:30','SITI HABSAH']]],
+
+  ['S1','12-01','Biology HL P1','LR 39|20','08:30-10:15',[['08:00-09:15','MOHD ROSELY'],['09:15-10:30','NOOR ASYIKIN A']]],
+  ['S1','12-01','Biology SL P1','LR 22|2','08:30-10:00',[['08:00-09:10','NORMALA'],['09:05-10:15','ROZIAH']]],
+  ['S1','12-01','Physics HL P1','LR 35|32','08:30-09:45',[['08:00-09:00','NURUL AISYA'],['09:00-10:00','NOR HASNI']]],
+  ['S1','12-01','ESS SL P1','NBGF|48','08:30-10:30',[['08:00-09:25','NORAINI*,NURUL HANIM'],['09:20-10:45','RAJA NOOR HASNI*,SUBAIDAH']]],
+  ['S1','12-01','Biology HL P2','LR 39|20','14:30-16:30',[['14:00-15:25','NORA'],['15:20-16:45','SAKEENA']]],
+  ['S1','12-01','Biology SL P2','LR 22|2','14:30-16:00',[['14:00-15:10','NURUL AZMIRA'],['15:05-16:15','MOHD AFIQ']]],
+  ['S1','12-01','Physics HL P2','LR 35|32','14:30-16:00',[['14:00-15:10','MARDZIAH'],['15:05-16:15','DR FAZILA']]],
+
+  ['S1','12-02','English B HL P1','Hall 78','08:30-10:00',[['08:00-09:10','AHMAD AKIF*,ARNILIZA,WARDAH SYAHIRAH'],['09:05-10:15','KAMARIAH*,MAZLINA,SITI MARYANI']]],
+  ['S1','12-02','English B SL P1','LR 38|24','08:30-09:45',[['08:00-09:00','SURYANI'],['09:00-10:00','WAN HAFIZI']]],
+  ['S1','12-02','English B HL P2 (Reading)','Hall 78','11:30-12:30',[['11:00-12:45','NOR AIDA*,NUR ASHIKIN Z,NURHAZZIMAH']]],
+  ['S1','12-02','English B SL P2 (Reading)','LR 38|24','11:30-12:30',[['11:00-12:45','NOR SYAZANA']]],
+
+  ['S1','12-03','Business Mgt HL P1','LR 22|4','08:30-10:45',[['08:00-09:30','DR AZLINDA'],['09:30-11:00','FAIZAL HASNUL']]],
+  ['S1','12-03','Business Mgt SL P1','Hall 70','08:30-10:15',[['08:00-09:15','ASIMA*,ASHIMAH EFFENDY,MOHD AFIQ'],['09:15-10:30','AZLINAWATY*,AZHANA,TENGKU HUSNA']]],
+  ['S1','12-03','Digital Society SL P1','LR 39|24','08:30-10:00',[['08:00-09:10','DR FAZLINDA'],['09:05-10:15','JOHAINA']]],
+  ['S1','12-03','Business Mgt HL P2','LR 22|4','14:30-15:45',[['14:00-15:00','SURIYANI'],['15:00-16:00','WAN HAFIZI']]],
+  ['S1','12-03','Digital Society SL P2','LR 39|24','14:30-15:45',[['14:00-15:00','JEREMIAH D'],['15:00-16:00','JULIANA']]],
+
+  ['S1','12-04','MAA HL P1','NBGF|70','08:30-10:30',[['08:00-09:25','ROZIAH*,NORAINI,MUHAMAD AZHA'],['09:20-10:45','NORA*,NOR HASNI,MARIAM NABILAH']]],
+  ['S1','12-04','MAI HL P1','LR 39|32','08:30-10:30',[['08:00-09:25','NURUL AISYA'],['09:20-10:45','RAJA NOOR HASNI']]],
+
+  ['S1','12-07','MAA HL P2','NBGF|74','08:30-10:30',[['08:00-09:25','DR FAZLINDA*,JEREMIAH D,NAZLIAH'],['09:20-10:45','AZLINAWATY*,JULIANA,MOHD ROSELY']]],
+  ['S1','12-07','MAI HL P2','LR 39|32','08:30-10:30',[['08:00-09:25','AZHANA'],['09:20-10:45','MUHAMAD AZHA']]],
+  ['S1','12-07','Lang A Lit SL P1 (Malay)','Hall 102','14:30-15:45',[['14:00-15:00','NORAINI*,NUR HAZIYATI,NURUL HANIM,SITI MARYANI'],['15:00-16:00','DR NURJANAH*,ROZIAH,NOOR AIN,WARDAH SYAHIRAH']]],
+
+  ['S1','12-08','Chemistry HL P2','LR 7|24','08:30-11:00',[['08:00-09:40','SUBAIDAH'],['09:35-11:15','RAJA NOOR HASNI']]],
+  ['S1','12-08','Chemistry SL P2','LR 38|28','08:30-10:00',[['08:00-09:10','ROSLINDAWATI'],['09:05-10:15','NURUL AISYA']]],
+  ['S1','12-08','Chemistry HL P1','LR 7|24','14:30-16:30',[['14:00-15:25','DR NURJANAH'],['15:20-16:45','MIMI H Z']]],
+  ['S1','12-08','Chemistry SL P1','LR 38|28','14:30-16:00',[['14:00-15:10','NAZLIAH'],['15:05-16:15','DR ABDUL JAMIR']]],
+
+  ['S1','12-09','Economics HL P3','NBGF|46','08:30-09:30',[['08:00-09:15','AZLINA HEZLIN*,DR MOHAMMAD SHIHAM'],['09:15-10:30','NOR SYAZANA*,ROSLINDAWATI']]],
+  ['S1','12-09','MAI HL P3','LR 39|32','14:30-15:45',[['14:00-15:00','DR MELOR'],['15:00-16:00','MUHAMMAD HAZIMI']]],
+
+  ['S1','12-10','English B SL P2 (Listening)','LR 38|24','08:30-09:15',[['08:00-09:30','NOR AIDA,JEREMIAH (AUDIO)']]],
+  ['S1','12-10','English B HL P2 (Listening)','Hall 78','08:30-09:30',[['08:00-09:45','DR MELOR*,DR AZLINDA,NURUL HIDAYAH (LAB),NORAINI (AUDIO)']]]
+];
+
+/* ---------- build exams + duty slots ---------- */
+const mins = t => { const p = t.split(':').map(Number); return p[0] * 60 + p[1]; };
+const EXAMS = [];
+const DUTIES = [];
+RAW.forEach((r, i) => {
+  const venueParts = r[3].split('|');
+  const ex = { id: 'e' + (i + 1), batch: r[0], date: '2026-' + r[1], subject: r[2], venue: venueParts[0], nos: venueParts[1] ? +venueParts[1] : null, examTime: r[4], shifts: [] };
+  r[5].forEach((s, si) => {
+    const w = s[0].split('-');
+    const sh = { win: s[0], start: mins(w[0]), end: mins(w[1]), duties: [] };
+    s[1].split(',').forEach(raw => {
+      let n = raw.trim(), chief = false, tag = null;
+      if (n.endsWith('*')) { chief = true; n = n.slice(0, -1); }
+      const m = n.match(/^(.*?)\s*\((AUDIO|LAB)\)$/);
+      if (m) { n = m[1]; tag = m[2]; }
+      const d = { id: 'd' + (DUTIES.length + 1), exam: ex, shiftIndex: si, win: s[0], start: sh.start, end: sh.end, date: ex.date, name: n, chief, tag, was: null };
+      DUTIES.push(d); sh.duties.push(d);
+    });
+    ex.shifts.push(sh);
+  });
+  EXAMS.push(ex);
+});
+
+/* ---------- names: aliases and lookups ---------- */
+const ALIAS = {};
+const who = d => ALIAS[d.name] || d.name;
+const teachers = () => Array.from(new Set(DUTIES.map(who))).sort();
+const dutiesOf = n => DUTIES.filter(d => who(d) === n).sort((a, b) => a.date.localeCompare(b.date) || a.start - b.start);
+
+/* ---------- clash logic (a 5 minute handover overlap between shifts is normal) ---------- */
+const overlap = (a, b) => Math.min(a.end, b.end) - Math.max(a.start, b.start);
+const clashing = (a, b) => a !== b && a.date === b.date && overlap(a, b) > 5;
+
+function findClashes() {
+  const by = {}, out = [];
+  DUTIES.forEach(d => { const k = who(d); (by[k] = by[k] || []).push(d); });
+  Object.keys(by).forEach(name => {
+    const l = by[name];
+    for (let i = 0; i < l.length; i++) for (let j = i + 1; j < l.length; j++) {
+      if (clashing(l[i], l[j])) out.push({ name, a: l[i], b: l[j], mins: overlap(l[i], l[j]) });
+    }
+  });
+  return out;
+}
+
+/* A gives dutyA to B and takes dutyB. Returns clashes created for either side. */
+function swapCheck(dutyA, dutyB) {
+  const A = who(dutyA), B = who(dutyB), issues = [];
+  DUTIES.forEach(o => {
+    if (who(o) === A && o !== dutyA && clashing(o, dutyB)) issues.push({ who: A, other: o });
+    if (who(o) === B && o !== dutyB && clashing(o, dutyA)) issues.push({ who: B, other: o });
+  });
+  return { issues, chiefMismatch: dutyA.chief !== dutyB.chief };
+}
+
+/* ---------- possible spelling variants ---------- */
+const PAIRS = [
+  { id: 'p1', a: 'SURYANI', b: 'SURIYANI', kind: 'same', why: 'One letter apart.' },
+  { id: 'p2', a: 'DR MOHAMMAD SHIHAM', b: 'DR MUHAMAD SHIHAM', kind: 'same', why: 'First name spelled two ways.' },
+  { id: 'p3', a: 'MOHD SYAFIQ AFFANDI', b: 'MOHD SYAFIQ', kind: 'same', why: 'Short form of the full name.' },
+  { id: 'p4', a: 'JEREMIAH D', b: 'JEREMIAH', kind: 'same', why: 'Initial left off.' },
+  { id: 'p5', a: 'SAKEENA', b: 'KEENA', kind: 'confirm', why: 'KEENA appears only in a quarantine list. It may be a nickname.' },
+  { id: 'p6', a: 'NOOR ASYIKIN A', b: 'SYIK', kind: 'confirm', why: 'SYIK appears only in a quarantine list.' },
+  { id: 'p7', a: 'ASIMA', b: 'ASHIMAH EFFENDY', kind: 'look' },
+  { id: 'p8', a: 'NORA', b: 'NORAINI', kind: 'look' },
+  { id: 'p9', a: 'NOR HASNI', b: 'RAJA NOOR HASNI', kind: 'look' },
+  { id: 'p10', a: 'DR AZLINDA', b: 'AZLINA HEZLIN', kind: 'look' },
+  { id: 'p11', a: 'ROZIAH', b: 'ROZLIANA', kind: 'look' },
+  { id: 'p12', a: 'NOR HIDAYAH', b: 'NURUL HIDAYAH', kind: 'look' },
+  { id: 'p13', a: 'MUHAMMAD AZRI', b: 'MUHAMAD AZHA', kind: 'look' },
+  { id: 'p14', a: 'DR FAZILA', b: 'DR FAZLINDA', kind: 'look' },
+  { id: 'p15', a: 'NUR ASHIKIN Z', b: 'NOOR ASYIKIN A', kind: 'look' },
+  { id: 'p16', a: 'ROHANI', b: 'ROZIAH', kind: 'look' }
+];
+const UNMATCHED = []; // DHIYA confirmed by Yani as a separate person
+
+/* Proof that two printed names are different people: same shift, or overlapping slots */
+function evidence(a, b) {
+  const A = DUTIES.filter(d => d.name === a), B = DUTIES.filter(d => d.name === b);
+  for (const x of A) for (const y of B) if (x.exam === y.exam && x.shiftIndex === y.shiftIndex) return { kind: 'shift', x, y };
+  for (const x of A) for (const y of B) if (x.exam === y.exam) return { kind: 'exam', x, y };
+  for (const x of A) for (const y of B) if (clashing(x, y)) return { kind: 'overlap', x, y };
+  return null;
+}
+
+const NOTES = [
+  { tag: 'Fixed', text: 'Sem 3, 30 Nov, 11:30 session: the PDF prints the date as 30/11/2025. It is treated as 30/11/2026.' },
+  { tag: 'Confirm', text: 'Sem 3, 9 Dec, English B HL Paper 2: the two halls and the two quarantine lists share one block in the PDF. The split used here (quarantine 8:00–9:00 and 9:00–10:00) is a reading of that layout.' },
+  { tag: 'Confirm', text: 'Sem 3, 2 Dec, MAI HL Paper 1: only NORA is marked (K). DR AZLINDA has no (K) in the PDF.' },
+  { tag: 'Confirm', text: 'Sem 3, 3 Dec, English B HL Paper 1 (Hall 137): five names in the first column and four in the second. NUR SYAKIRAH is placed in the first shift.' }
+];
+
+function findDuty(batch, md, subject, name) {
+  return DUTIES.find(d => d.exam.batch === batch && d.date === '2026-' + md && d.exam.subject === subject && d.name === name);
+}
+/* ---------- UI ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtDate = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+const f12 = t => { const p = t.split(':').map(Number); let h = p[0]; const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return { s: h + ':' + String(p[1]).padStart(2, '0'), ap }; };
+const fwin = w => { const p = w.split('-').map(f12); return p[0].ap === p[1].ap ? p[0].s + '–' + p[1].s + ' ' + p[1].ap : p[0].s + ' ' + p[0].ap + '–' + p[1].s + ' ' + p[1].ap; };
+const bTag = b => '<span class="batch ' + b + '">' + BATCH[b].short + '</span>';
+const venueTxt = ex => ex.venue + (ex.nos ? ' · ' + ex.nos + ' students' : '');
+const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+
+const S = { orig: null, tab: 'home', home: '', hq: '', sug: [], si: -1, me: '', giveId: null, sameRole: true, sDay: 'all', sBatch: 'any', avoid: {}, sQ: '', copyText: '', batch: 'all', date: 'all', q: '', decisions: {}, tt: null };
+
+function dutyLine(d, o) {
+  o = o || {};
+  return '<div class="dline">' + (o.date === false ? '' : '<span class="dd">' + fmtDate(d.date) + '</span>') +
+    '<span class="mono">' + fwin(d.win) + '</span><span class="ds">' + esc(d.exam.subject) + '</span><span class="dv">' + esc(venueTxt(d.exam)) + '</span></div>';
+}
+function roleTags(d) {
+  return bTag(d.exam.batch) + (d.chief ? ' <span class="pill info">Chief invigilator</span>' : '') + (d.tag ? ' <span class="pill plain">' + d.tag + '</span>' : '');
+}
+const clashIds = () => new Set(findClashes().flatMap(c => [c.a.id, c.b.id]));
+
+/* ---------- name decisions ---------- */
+const needs = p => !S.decisions[p.id] && (p.kind === 'same' || p.kind === 'confirm' || (p.kind === 'look' && !evidence(p.a, p.b)));
+function evText(e) {
+  if (!e) return null;
+  const x = e.x, y = e.y;
+  if (e.kind === 'shift') return 'Both are on the same shift: ' + x.exam.subject + ', ' + fmtDate(x.date) + ' ' + fwin(x.win) + '.';
+  if (e.kind === 'exam') return 'Both are listed in ' + x.exam.subject + ' on ' + fmtDate(x.date) + ', so they are two people.';
+  return 'Overlapping slots on ' + fmtDate(x.date) + ': ' + x.name + ' (' + x.exam.subject + ', ' + fwin(x.win) + ') and ' + y.name + ' (' + y.exam.subject + ', ' + fwin(y.win) + ').';
+}
+function applyMerge(p, keep) {
+  const other = keep === p.a ? p.b : p.a;
+  ALIAS[other] = keep;
+  S.decisions[p.id] = { t: 'merged', keep, other };
+}
+function undoDecision(id) {
+  const dec = S.decisions[id];
+  if (dec && dec.t === 'merged') delete ALIAS[dec.other];
+  delete S.decisions[id];
+}
+const nDuties = n => DUTIES.filter(d => d.name === n).length;
+
+function section(title, sub, body) {
+  return '<section class="sec"><div class="sec-h"><h3>' + title + '</h3>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' + body + '</section>';
+}
+
+/* ---------- swap checker ---------- */
+function pickMe(name) {
+  S.me = name;
+  const list = name ? dutiesOf(name) : [], cids = clashIds();
+  const g = list.find(d => cids.has(d.id)) || list[0];
+  S.giveId = g ? g.id : null;
+  S.copyText = '';
+}
+
+const hourLbl = h => { const a = h % 12 || 12, b = (h + 1) % 12 || 12, p1 = h >= 12 ? 'pm' : 'am', p2 = h + 1 >= 12 ? 'pm' : 'am'; return p1 === p2 ? a + '–' + b + ' ' + p2 : a + ' ' + p1 + '–' + b + ' ' + p2; };
+const startHours = () => Array.from(new Set(DUTIES.map(d => Math.floor(d.start / 60)))).sort((a, b) => a - b);
+const avoidedHours = () => startHours().filter(h => S.avoid[h]);
+function avoidHtml() {
+  return '<fieldset class="avoid"><legend>Hide colleague duties that start at (on any day)</legend>' + startHours().map(h => '<label class="av"><input type="checkbox" data-avoid="' + h + '"' + (S.avoid[h] ? ' checked' : '') + '>' + hourLbl(h) + '</label>').join('') + '</fieldset>';
+}
+document.addEventListener('change', e => {
+  const h = e.target.dataset && e.target.dataset.avoid;
+  if (h === undefined) return;
+  S.avoid[h] = e.target.checked; render();
+});
+function swapResults(give) {
+  const me = who(give), out = [];
+  teachers().filter(t => t !== me).forEach(t => {
+    const theirs = dutiesOf(t);
+    const opts = theirs.filter(d => {
+      if (d.exam === give.exam) return false;
+      if (S.sameRole && d.chief !== give.chief) return false;
+      if (S.sDay !== 'all' && d.date !== S.sDay) return false;
+      if (S.sBatch !== 'any' && d.exam.batch !== S.sBatch) return false;
+      if (S.avoid[Math.floor(d.start / 60)]) return false;
+      return swapCheck(give, d).issues.length === 0;
+    });
+    out.push({ t, opts, free: !theirs.some(d => clashing(d, give)) });
+  });
+  return out;
+}
+function swapResultsHtml() {
+  const give = DUTIES.find(d => d.id === S.giveId);
+  if (!give) return '<div class="empty">Choose your name and the duty you want to give away.</div>';
+  const q = S.sQ.trim().toLowerCase();
+  const all = swapResults(give).filter(r => !q || r.t.toLowerCase().includes(q));
+  const withOpts = all.filter(r => r.opts.length), free = all.filter(r => r.free);
+  const nOpts = withOpts.reduce((n, r) => n + r.opts.length, 0);
+  const sum = '<div class="note info"><b>' + plural(withOpts.length, 'colleague') + '</b> ' + (withOpts.length === 1 ? 'has' : 'have') + ' a duty you could swap into without a clash (' + plural(nOpts, 'option') + '). <b>' + free.length + '</b> ' + (free.length === 1 ? 'is' : 'are') + ' free at the time of your duty.' + (avoidedHours().length ? ' Hiding duties that start ' + avoidedHours().map(hourLbl).join(', ') + '.' : '') + '</div>';
+  const cards = withOpts.map(r => '<div class="card"><div class="row"><b>' + esc(r.t) + '</b>' + (r.free ? '<span class="pill ok">Free at your time slot</span>' : '') + '</div>' +
+    r.opts.map(d => '<div class="optrow"><div>' + dutyLine(d) + '<div class="tags">' + roleTags(d) + '</div></div><button class="btn sm" data-act="copy" data-get="' + d.id + '">Copy message</button></div>').join('') + '</div>').join('');
+  const freeHtml = free.length ? '<details><summary>Free at that time, could cover without swapping (' + free.length + ')</summary><div class="names" style="margin-top:6px">' + free.map(r => '<span class="chip" style="cursor:default">' + esc(r.t) + '</span>').join('') + '</div><p class="small muted" style="margin-top:6px">Free means no duty at an overlapping time. It does not mean they agreed.</p></details>' : '';
+  const box = S.copyText ? '<div class="card"><div class="small muted">Message (copied if your browser allowed it, otherwise select and copy):</div><textarea class="msg" rows="4" readonly>' + esc(S.copyText) + '</textarea></div>' : '';
+  return sum + box + (cards || '<div class="empty">No colleague has a duty that fits with these filters. Try turning off Same role only, choosing All days, or unticking a start time.</div>') + freeHtml;
+}
+function viewSwap() {
+  const ts = teachers();
+  if (S.me && !ts.includes(S.me)) pickMe('');
+  const mine = S.me ? dutiesOf(S.me) : [], cids = clashIds();
+  let give = mine.find(d => d.id === S.giveId) || mine[0];
+  S.giveId = give ? give.id : null;
+  const dates = Array.from(new Set(EXAMS.map(e => e.date))).sort();
+  const ctl = '<div class="card"><div class="ctl">' +
+    '<label>Your name<select id="sMe"><option value="">Choose your name</option>' + ts.map(t => '<option value="' + esc(t) + '"' + (t === S.me ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select></label>' +
+    '<label>Duty you want to give away<select id="sGive">' + (mine.length ? mine.map(d => '<option value="' + d.id + '"' + (give && d.id === give.id ? ' selected' : '') + '>' + fmtDate(d.date) + ' · ' + fwin(d.win) + ' · ' + esc(d.exam.subject) + ' (' + BATCH[d.exam.batch].short + ')' + (cids.has(d.id) ? ' · clash' : '') + '</option>').join('') : '<option value="">Choose your name first</option>') + '</select></label>' +
+    '<label>Colleague’s day<select id="sDay"><option value="all">All days</option>' + dates.map(d => '<option value="' + d + '"' + (S.sDay === d ? ' selected' : '') + '>' + fmtDate(d) + '</option>').join('') + '</select></label>' +
+    '<label>Colleague’s batch<select id="sBatch"><option value="any">Both batches</option><option value="S3"' + (S.sBatch === 'S3' ? ' selected' : '') + '>' + BATCH.S3.short + ' · Batch 2025–27</option><option value="S1"' + (S.sBatch === 'S1' ? ' selected' : '') + '>' + BATCH.S1.short + ' · Batch 2026–28</option></select></label>' +
+    '<label>Search colleague<input id="sQ" type="search" value="' + esc(S.sQ) + '" placeholder="Type a name"></label>' +
+    '<label class="chk"><input id="sRole" type="checkbox"' + (S.sameRole ? ' checked' : '') + '> Same role only (chief with chief)</label></div>' + avoidHtml() +
+    (give ? '<div class="sec" style="gap:4px"><div class="small muted">Your duty</div>' + dutyLine(give) + '<div class="tags">' + roleTags(give) + (cids.has(give.id) ? ' <span class="pill bad">Clashes with another duty of yours</span>' : '') + '</div></div>' : '') + '</div>';
+  return alertHtml('Inform UPPD', 'Swaps are arranged outside this system, by mutual agreement between the teachers. Please inform UPPD immediately.') + ctl + '<div id="swapResults" class="sec">' + swapResultsHtml() + '</div>';
+}
+
+/* ---------- data check ---------- */
+function viewCheck() {
+  const cl = findClashes(), todo = PAIRS.filter(needs).length, T = teachers().length;
+  const stats = '<div class="stats">' +
+    '<div class="stat"><b>' + DUTIES.length + '</b><span>duty slots</span></div>' +
+    '<div class="stat"><b>' + EXAMS.length + '</b><span>exam blocks</span></div>' +
+    '<div class="stat"><b>' + T + '</b><span>names on the roster</span></div>' +
+    '<div class="stat ' + (cl.length ? 'bad' : 'good') + '"><b>' + cl.length + '</b><span>' + (cl.length === 1 ? 'clash' : 'clashes') + '</span></div>' +
+    '<div class="stat ' + (todo ? 'warn' : 'good') + '"><b>' + todo + '</b><span>names to review</span></div></div>';
+
+  const clashHtml = cl.length ? cl.map(c => '<div class="card bad"><div class="row"><div><b>' + esc(c.name) + '</b> is on two duties at the same time <span class="muted small">(' + c.mins + ' minutes overlap)</span></div></div>' +
+    [c.a, c.b].map(d => '<div class="optrow" style="border-top:0;padding-top:0"><div>' + dutyLine(d) + '<div class="tags">' + bTag(d.exam.batch) + '</div></div><button class="btn sm" data-act="findSwap" data-name="' + esc(c.name) + '" data-id="' + d.id + '">Find a swap</button></div>').join('') + '</div>').join('')
+    : '<div class="card ok">No clashes. Every teacher was checked across both timetables.</div>';
+
+  const decided = p => {
+    const dec = S.decisions[p.id];
+    return '<div class="row"><span class="pill ' + (dec.t === 'merged' ? 'ok' : 'plain') + '">' + (dec.t === 'merged' ? 'Merged as ' + esc(dec.keep) : 'Kept separate') + '</span><button class="btn sm" data-act="undo" data-pair="' + p.id + '">Undo</button></div>';
+  };
+  const pairCard = p => {
+    const e = evidence(p.a, p.b), dec = S.decisions[p.id];
+    let why = p.why || '', proof = '';
+    if (p.kind === 'same') proof = e ? '<div class="note bad">Careful: ' + esc(evText(e)) + '</div>' : '<div class="small muted">Never on the same shift and never at overlapping times, so very likely one person.</div>';
+    if (p.kind === 'look') why = 'The spellings are close, and nothing in the timetables proves they are different people.';
+    let btns;
+    if (dec) btns = decided(p);
+    else if (p.kind === 'same') btns = '<div class="btns"><button class="btn sm primary" data-act="merge" data-pair="' + p.id + '" data-keep="' + esc(p.a) + '">Merge as ' + esc(p.a) + '</button><button class="btn sm" data-act="merge" data-pair="' + p.id + '" data-keep="' + esc(p.b) + '">Merge as ' + esc(p.b) + '</button><button class="btn sm" data-act="separate" data-pair="' + p.id + '">Keep separate</button></div>';
+    else btns = '<div class="btns"><button class="btn sm" data-act="merge" data-pair="' + p.id + '" data-keep="' + esc(p.a) + '">Same person, use ' + esc(p.a) + '</button><button class="btn sm" data-act="separate" data-pair="' + p.id + '">Different people</button></div>';
+    return '<div class="card ' + (dec ? 'ok' : 'warn') + '"><div class="row"><div><b>' + esc(p.a) + '</b> <span class="muted">and</span> <b>' + esc(p.b) + '</b></div><span class="mono muted">' + plural(nDuties(p.a), 'duty') + ' · ' + plural(nDuties(p.b), 'duty') + '</span></div>' +
+      (why ? '<div class="small">' + esc(why) + '</div>' : '') + proof + btns + '</div>';
+  };
+  const same = PAIRS.filter(p => p.kind === 'same').map(pairCard).join('');
+  const confirm = PAIRS.filter(p => p.kind === 'confirm' || (p.kind === 'look' && !evidence(p.a, p.b))).map(pairCard).join('') +
+    UNMATCHED.map(u => '<div class="card warn"><div><b>' + esc(u.name) + '</b></div><div class="small">' + esc(u.why) + ' Check the spelling with the person.</div></div>').join('');
+  const proven = PAIRS.filter(p => p.kind === 'look' && evidence(p.a, p.b));
+  const provenHtml = '<details><summary>Look alike, but different people (' + proven.length + ')</summary><div class="sec" style="gap:8px">' + proven.map(p => '<div class="card"><div><b>' + esc(p.a) + '</b> <span class="muted">and</span> <b>' + esc(p.b) + '</b></div><div class="small muted">' + esc(evText(evidence(p.a, p.b))) + '</div></div>').join('') + '</div></details>';
+  const notes = '<div class="sec" style="gap:8px">' + NOTES.map(n => '<div class="card"><div class="row" style="justify-content:flex-start"><span class="pill ' + (n.tag === 'Fixed' ? 'ok' : 'warn') + '">' + n.tag + '</span><span>' + esc(n.text) + '</span></div></div>').join('') + '</div>';
+
+  return stats +
+    section('Double-booked teachers', 'Two duties at the same time, across both batches.', clashHtml) +
+    section('Probably the same person', 'Different spellings of one name. Pick the correct spelling and the swap checker and clash check use it everywhere.', same) +
+    section('Please confirm', 'Short names and close spellings the tool cannot settle.', confirm) +
+    provenHtml +
+    section('Notes about the PDFs', 'Where the layout was unclear.', notes);
+}
+
+/* ---------- roster ---------- */
+function viewRoster() {
+  const dates = Array.from(new Set(EXAMS.map(e => e.date))).sort();
+  return '<div class="filters"><label>Batch<select id="fBatch"><option value="all">Both batches</option><option value="S3"' + (S.batch === 'S3' ? ' selected' : '') + '>' + BATCH.S3.long + '</option><option value="S1"' + (S.batch === 'S1' ? ' selected' : '') + '>' + BATCH.S1.long + '</option></select></label>' +
+    '<label>Day<select id="fDate"><option value="all">All days</option>' + dates.map(d => '<option value="' + d + '"' + (S.date === d ? ' selected' : '') + '>' + fmtDate(d) + '</option>').join('') + '</select></label>' +
+    '<label class="grow">Search teacher, subject or room<input id="fQ" type="search" value="' + esc(S.q) + '" placeholder="For example SURYANI or DIGITAL SOCIETY"></label></div>' +
+    '<div id="rosterList" class="sec">' + rosterListHtml() + '</div>';
+}
+function chipHtml(d, q, cids) {
+  const n = who(d), hit = q && (n + ' ' + d.name).toLowerCase().includes(q);
+  const cls = 'chip' + (d.chief ? ' chief' : '') + (cids.has(d.id) ? ' clash' : '') + (hit ? ' hit' : '');
+  const title = d.name !== n ? 'Printed as ' + d.name : '';
+  return '<button class="' + cls + '" data-act="who" data-name="' + esc(n) + '"' + (title ? ' title="' + esc(title) + '"' : '') + '>' + esc(n) + (d.chief ? '<small>K</small>' : '') + (d.tag ? '<small>' + d.tag + '</small>' : '') + '</button>';
+}
+function rosterListHtml() {
+  const q = S.q.trim().toLowerCase(), cids = clashIds();
+  let ex = EXAMS.filter(e => (S.batch === 'all' || e.batch === S.batch) && (S.date === 'all' || e.date === S.date));
+  if (q) ex = ex.filter(e => (e.subject + ' ' + e.venue).toLowerCase().includes(q) || e.shifts.some(s => s.duties.some(d => (who(d) + ' ' + d.name).toLowerCase().includes(q))));
+  ex.sort((a, b) => a.date.localeCompare(b.date) || a.shifts[0].start - b.shifts[0].start || a.batch.localeCompare(b.batch) || a.venue.localeCompare(b.venue));
+  if (!ex.length) return '<div class="empty">Nothing matches. Try a shorter search.</div>';
+  const slots = ex.reduce((n, e) => n + e.shifts.reduce((m, s) => m + s.duties.length, 0), 0);
+  let html = '<div class="small muted">' + plural(ex.length, 'exam block') + ' · ' + plural(slots, 'duty slot') + '</div>', cur = '';
+  ex.forEach(e => {
+    if (e.date !== cur) { cur = e.date; html += '<div class="dayh"><h3>' + fmtDate(cur) + '</h3></div>'; }
+    html += '<article class="exam"><div class="exam-h"><span class="t">' + fwin(e.examTime) + '</span><span class="s">' + esc(e.subject) + '</span><span class="v">' + esc(venueTxt(e)) + '</span>' + bTag(e.batch) + '</div><div class="shifts">' +
+      e.shifts.map(s => '<div class="shift"><span class="w">Invigilation ' + fwin(s.win) + '</span><div class="names">' + s.duties.map(d => chipHtml(d, q, cids)).join('') + '</div></div>').join('') + '</div></article>';
+  });
+  return html;
+}
+
+/* ---------- chrome + render ---------- */
+const alertHtml = (title, text) => '<div class="alert" role="note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><div>' + (title ? '<b>' + title + '</b>' : '') + text + '</div></div>';
+const PAGE = {
+  swap: ['Swap checker', 'Pick the duty you want to give away. The list shows colleagues whose duty you could take in return, with no clash for either of you. Then message them yourself. Nothing is sent from here.'],
+  roster: ['Full roster', 'Every exam block and who is on it. Names in red are double-booked. K marks the chief invigilator. Tap a name to see all of that teacher’s duties.'],
+  check: ['Data check', 'The tool reads both timetables, then looks for double-booked teachers, names that may be spelled two ways, and anything in the PDFs that was unclear.']
+};
+const DAYS = () => Array.from(new Set(EXAMS.map(e => e.date))).sort();
+const aliasesOf = n => Object.keys(ALIAS).filter(k => ALIAS[k] === n);
+
+function renderChrome() {
+  const items = [['home', 'Home', 0], ['swap', 'Swap checker', 0], ['roster', 'Full roster', 0]];
+  $('#nav').innerHTML = items.map(t => '<button class="nl"' + (S.tab === t[0] ? ' aria-current="page"' : '') + ' data-act="tab" data-tab="' + t[0] + '">' + t[1] + (t[2] ? '<span class="count">' + t[2] + '</span>' : '') + '</button>').join('');
+}
+function origViewer() {
+  if (!S.orig) return '';
+  const n = S.orig === 'sem3' ? 9 : 8, title = S.orig === 'sem3' ? 'Semester 3 (Batch 2025–27)' : 'Semester 1 (Batch 2026–28)';
+  let h = '<div class="origv"><div class="ot">' + title + ' · official timetable, ' + n + ' pages. Scroll sideways or pinch to zoom.</div>';
+  for (let i = 1; i <= n; i++) h += '<div class="op"><img loading="lazy" alt="' + title + ' page ' + i + '" src="img/' + S.orig + '-' + i + '.jpg"></div>';
+  return h + '</div>';
+}
+function renderHero() {
+  const el = $('#hero');
+  if (S.tab !== 'home') { el.innerHTML = '<div class="band page"><div class="wrap"><h2>' + PAGE[S.tab][0] + '</h2><p>' + PAGE[S.tab][1] + '</p></div></div>'; return; }
+  el.innerHTML = '<div class="band hero"><div class="wrap">' +
+    '<p class="eyebrow">Semester examinations · December 2026</p>' +
+    '<h2 class="hero-t">Find your invigilation duties</h2>' +
+    '<p class="hero-s">Type your name to see your timetable across both batches, check for clashes, and look for a colleague to swap with.</p>' +
+    '<div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>' +
+    '<input id="hq" type="text" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search your name" value="' + esc(S.hq) + '">' +
+    '<div id="suggest" class="suggest" role="listbox" hidden></div></div>' +
+    '<div style="max-width:640px;width:100%">' + alertHtml('', 'Times shown are invigilation windows, which start before the paper. Always confirm with the official timetable.') + '</div>' +
+    '<div class="pdfrow"><span class="pl">Original timetables</span>' + [['sem3', 'Semester 3', 9], ['sem1', 'Semester 1', 8]].map(o => '<button data-act="orig" data-k="' + o[0] + '" aria-expanded="' + (S.orig === o[0]) + '"' + (S.orig === o[0] ? ' class="on"' : '') + '>' + o[1] + (S.orig === o[0] ? ' ▴' : ' ▾') + '</button>').join('') + '</div>' + origViewer() +
+    '<p class="dayhint">Tap a day to see the full timetable for that day</p>' +
+    '<div class="dayrow" aria-label="Exam days">' + DAYS().map(d => '<button class="dp" data-act="day" data-date="' + d + '">' + fmtDate(d) + '</button>').join('') + '</div></div></div>';
+}
+function render() {
+  renderChrome(); renderHero();
+  $('#view').innerHTML = { home: viewHome, swap: viewSwap, roster: viewRoster, check: viewCheck }[S.tab]();
+}
+
+/* ---------- landing page: search and personal timetable ---------- */
+function suggest(q) {
+  const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!toks.length) return [];
+  const res = [];
+  teachers().forEach(n => {
+    const names = [n].concat(aliasesOf(n));
+    const hit = names.find(x => toks.every(t => x.toLowerCase().includes(t)));
+    if (hit) res.push({ n, via: hit !== n ? hit : null, score: hit.toLowerCase().startsWith(toks[0]) ? 0 : 1 });
+  });
+  res.sort((a, b) => a.score - b.score || a.n.localeCompare(b.n));
+  return res.slice(0, 8);
+}
+function showSuggest() {
+  const box = $('#suggest'), inp = $('#hq');
+  if (!box || !inp) return;
+  if (!S.hq.trim()) { box.hidden = true; inp.setAttribute('aria-expanded', 'false'); return; }
+  box.hidden = false; inp.setAttribute('aria-expanded', 'true');
+  box.innerHTML = S.sug.length ? S.sug.map((s, i) => '<button class="sg' + (i === S.si ? ' on' : '') + '" role="option" aria-selected="' + (i === S.si) + '" data-act="pick" data-name="' + esc(s.n) + '"><span>' + esc(s.n) + (s.via ? ' <small>printed as ' + esc(s.via) + '</small>' : '') + '</span><small>' + plural(dutiesOf(s.n).length, 'duty') + '</small></button>').join('')
+    : '<div class="sg-none">No name matches. Try part of your name, as printed in the timetable.</div>';
+}
+function closeSuggest() { const b = $('#suggest'), i = $('#hq'); if (b) b.hidden = true; if (i) i.setAttribute('aria-expanded', 'false'); }
+function selectName(n) {
+  S.home = n; S.hq = n; S.sug = []; S.si = -1; pickMe(n);
+  const i = $('#hq'); if (i) i.value = n;
+  closeSuggest();
+  $('#view').innerHTML = viewHome();
+  const r = $('#result'); if (r && r.scrollIntoView) r.scrollIntoView({ block: 'start' });
+}
+
+function viewHome() {
+  if (S.home) return '<div id="result" class="sec">' + resultHtml(S.home) + '</div>';
+  const stats = '<div class="stats">' +
+    '<div class="stat"><b>' + teachers().length + '</b><span>invigilators</span></div>' +
+    '<div class="stat"><b>' + DUTIES.length + '</b><span>duty slots</span></div>' +
+    '<div class="stat"><b>' + EXAMS.length + '</b><span>exam blocks</span></div>' +
+    '<div class="stat"><b>' + DAYS().length + '</b><span>exam days, two batches</span></div></div>';
+  const steps = '<div class="steps">' +
+    '<div class="step"><span class="n">1</span><b>Search your name</b><p>Spelling variants work too. For example, typing AHMAD FAIZAL also finds AHMAD FAISAL.</p></div>' +
+    '<div class="step"><span class="n">2</span><b>See your timetable</b><p>Every duty from Semester 3 and Semester 1 on one grid, with clashes in red.</p></div>' +
+    '<div class="step"><span class="n">3</span><b>Check a swap</b><p>Pick a duty to give away and see which colleagues could take it without a clash.</p></div></div>';
+  return stats + steps;
+}
+
+function lanes(list) {
+  const ends = [], out = [];
+  list.forEach(d => {
+    let l = ends.findIndex(e => e <= d.start + 5);
+    if (l < 0) { l = ends.length; ends.push(0); }
+    ends[l] = d.end; out.push({ d, l });
+  });
+  const n = Math.max(1, ends.length);
+  return out.map(o => ({ d: o.d, l: o.l, n }));
+}
+function timetableGrid(name, list, cids) {
+  const T0 = 450, RH = 34, days = DAYS();
+  const axis = []; for (let h = 8; h <= 17; h++) axis.push(h);
+  const lbl = h => (h % 12 || 12) + (h >= 12 ? ' pm' : ' am');
+  const cols = days.map(dt => {
+    const ds = list.filter(d => d.date === dt).sort((a, b) => a.start - b.start);
+    return '<div class="tt-col">' + lanes(ds).map(o => {
+      const d = o.d, top = (d.start - T0) / 30 * RH, h = (d.end - d.start) / 30 * RH, w = 100 / o.n;
+      return '<button class="blk ' + d.exam.batch + (d.chief ? ' chief' : '') + (cids.has(d.id) ? ' clash' : '') + '" style="top:' + top + 'px;height:' + h + 'px;left:calc(' + (o.l * w) + '% + 2px);width:calc(' + w + '% - 4px)" data-act="findSwap" data-name="' + esc(name) + '" data-id="' + d.id + '" title="' + esc(d.exam.subject + ' · ' + fwin(d.win) + ' · ' + venueTxt(d.exam) + (d.chief ? ' · Chief invigilator' : '') + ' · Tap to find a swap') + '"><b>' + esc(d.exam.subject) + '</b><span>' + fwin(d.win) + '</span><span>' + esc(d.exam.venue) + '</span></button>';
+    }).join('') + '</div>';
+  }).join('');
+  return '<div class="tt-scroll"><div class="tt"><div class="tt-head"><div></div><div class="tt-days">' + days.map(dt => { const p = fmtDate(dt).split(' '); return '<div class="tt-dh"><b>' + p[0] + '</b>' + p[1] + ' ' + p[2] + '</div>'; }).join('') + '</div></div>' +
+    '<div class="tt-body"><div class="tt-axis">' + axis.map(h => '<span style="top:' + ((h * 60 - T0) / 30 * RH) + 'px">' + lbl(h) + '</span>').join('') + '</div>' +
+    '<div class="tt-cols">' + axis.map(h => '<div class="hl" style="top:' + ((h * 60 - T0) / 30 * RH) + 'px"></div>').join('') + cols + '</div></div></div></div>';
+}
+const coOf = d => d.exam.shifts[d.shiftIndex].duties.filter(x => x.id !== d.id);
+const chipOf = x => '<button class="cn" data-act="pick" data-name="' + esc(who(x)) + '">' + esc(who(x)) + (x.chief ? '<small>K</small>' : '') + '</button>';
+function coHtml(d) {
+  const co = coOf(d), sh = d.exam.shifts;
+  let h = co.length ? '<div class="co"><span class="cl">With you</span> ' + co.map(chipOf).join('') + '</div>'
+    : '<div class="co alone"><b>Single invigilator</b> · no co-invigilator in this session</div>';
+  const prev = sh[d.shiftIndex - 1], next = sh[d.shiftIndex + 1];
+  if (prev) h += '<div class="co"><span class="cl">Before you</span> ' + prev.duties.map(chipOf).join('') + '</div>';
+  if (next) h += '<div class="co"><span class="cl">After you</span> ' + next.duties.map(chipOf).join('') + '</div>';
+  return h;
+}
+function timetableList(name, list, cids) {
+  return '<div class="tt-list">' + Array.from(new Set(list.map(d => d.date))).map(dt => '<div><div class="dayh"><h3>' + fmtDate(dt) + '</h3></div>' + list.filter(d => d.date === dt).map(d => {
+    const bad = cids.has(d.id);
+    return '<div class="duty' + (bad ? ' clash' : '') + '"><div>' + dutyLine(d, { date: false }) + '<div class="tags">' + roleTags(d) + '<span class="pill plain">Paper ' + fwin(d.exam.examTime) + '</span>' + (bad ? ' <span class="pill bad">Clash</span>' : '') + '</div>' + coHtml(d) + '</div><button class="btn sm" data-act="findSwap" data-name="' + esc(name) + '" data-id="' + d.id + '">Find a swap</button></div>';
+  }).join('') + '</div>').join('') + '</div>';
+}
+function resultHtml(name) {
+  const list = dutiesOf(name), cids = clashIds();
+  if (!list.length) return '<div class="card warn"><p class="eyebrow" style="color:var(--accent)">Timetable for</p><h3 class="name">' + esc(name) + '</h3><div>No invigilation duties found for this name in the Semester 3 or Semester 1 timetables.</div><div class="small muted">If you expected a duty, check the spelling or ask the exam coordinator. Names are matched as printed in the timetable.</div></div>';
+  const days = new Set(list.map(d => d.date)).size, chiefN = list.filter(d => d.chief).length, bad = list.filter(d => cids.has(d.id)).length;
+  const printed = aliasesOf(name);
+  return '<div class="card who"><div class="row"><div><p class="eyebrow" style="color:var(--accent)">Timetable for</p><h3 class="name">' + esc(name) + '</h3>' + (printed.length ? '<div class="small muted">Also printed as ' + printed.map(esc).join(', ') + '</div>' : '') + '</div>' +
+    '<div class="btns"><button class="btn primary" data-act="swapFor" data-name="' + esc(name) + '">Find a swap</button><button class="btn" data-act="copyTT" data-name="' + esc(name) + '">Copy as text</button></div></div>' +
+    '<div class="tags" style="margin:0"><span class="pill info">' + plural(list.length, 'duty slot') + '</span><span class="pill plain">' + plural(days, 'exam day') + '</span>' + (chiefN ? '<span class="pill plain">' + chiefN + ' as chief invigilator</span>' : '') + '</div>' +
+    (bad ? '<div class="note bad">Two of your duties are at the same time. They are shown in red. Tap one to look for a swap.</div>' : '<div class="note ok">No clashes in your duties.</div>') + '</div>' +
+    '<div class="legend"><span><i class="s3"></i>Semester 3 · Batch 2025–27</span><span><i class="s1"></i>Semester 1 · Batch 2026–28</span><span><i class="cl"></i>Clash</span><span>K = chief invigilator</span><span>Tap a duty to find a swap</span></div>' +
+    timetableGrid(name, list, cids) + timetableList(name, list, cids);
+}
+function timetableText(name) {
+  const blocks = dutiesOf(name).map(d => {
+    const ex = d.exam, sem = BATCH[ex.batch].short;
+    const lines = ['*' + fmtDate(d.date) + ' | ' + fwin(d.win) + '*', '| ' + ex.subject, '| ' + ex.venue, '| ' + (ex.nos ? ex.nos + ' students (' + sem + ')' : sem)];
+    if (d.chief) lines.push('| Chief invigilator');
+    if (d.tag) lines.push('| ' + d.tag);
+    return lines.join('\n');
+  });
+  return '*Invigilation duties:*\n*' + name + '*\n\n' + blocks.join('\n\n');
+}
+function toast(msg) {
+  $('#toast').innerHTML = '<div class="toast" role="status">' + esc(msg) + '</div>';
+  clearTimeout(S.tt); S.tt = setTimeout(() => { $('#toast').innerHTML = ''; }, 4000);
+}
+function swapMessage(give, get) {
+  const slot = d => '*' + fmtDate(d.date) + ', ' + fwin(d.win) + '*';
+  return 'Hi *' + who(get) + '*, can we swap invigilation duty?\n\n' +
+    'I give: ' + give.exam.subject + ', ' + slot(give) + ' (' + venueTxt(give.exam) + ').\n\n' +
+    'I take yours: ' + get.exam.subject + ', ' + slot(get) + ' (' + venueTxt(get.exam) + ').\n\n' +
+    'No clash for either of us. Thank you.';
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if (!t) return;
+  const a = t.dataset.act, ds = t.dataset, pair = PAIRS.find(p => p.id === ds.pair);
+  if (a === 'orig') { S.orig = S.orig === ds.k ? null : ds.k; render(); }
+  else if (a === 'tab') { S.tab = ds.tab; render(); }
+  else if (a === 'day') { S.q = ''; S.tab = 'roster'; S.batch = 'all'; S.date = ds.date; render(); window.scrollTo(0, 0); }
+  else if (a === 'who') { S.q = ds.name; S.tab = 'roster'; S.batch = 'all'; S.date = 'all'; render(); window.scrollTo(0, 0); }
+  else if (a === 'merge') { applyMerge(pair, ds.keep); render(); toast('Merged. Clash check and swap checker now use ' + ds.keep + '.'); }
+  else if (a === 'separate') { S.decisions[pair.id] = { t: 'separate' }; render(); }
+  else if (a === 'undo') { undoDecision(ds.pair); render(); }
+  else if (a === 'findSwap') { S.me = ds.name; S.giveId = ds.id; S.copyText = ''; S.tab = 'swap'; render(); window.scrollTo(0, 0); }
+  else if (a === 'copy') {
+    const give = DUTIES.find(d => d.id === S.giveId), get = DUTIES.find(d => d.id === ds.get);
+    if (!give || !get) return;
+    S.copyText = swapMessage(give, get);
+    $('#swapResults').innerHTML = swapResultsHtml();
+    try {
+      navigator.clipboard.writeText(S.copyText).then(() => toast('Message copied. Send it to ' + who(get) + ' yourself.'), () => toast('Select the message in the box and copy it.'));
+    } catch (err) { toast('Select the message in the box and copy it.'); }
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'sMe') { pickMe(t.value); render(); }
+  else if (t.id === 'sGive') { S.giveId = t.value; S.copyText = ''; render(); }
+  else if (t.id === 'sDay') { S.sDay = t.value; render(); }
+  else if (t.id === 'sBatch') { S.sBatch = t.value; render(); }
+  else if (t.id === 'sRole') { S.sameRole = t.checked; render(); }
+  else if (t.id === 'fBatch') { S.batch = t.value; render(); }
+  else if (t.id === 'fDate') { S.date = t.value; render(); }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'sQ') { S.sQ = t.value; $('#swapResults').innerHTML = swapResultsHtml(); }
+  else if (t.id === 'fQ') { S.q = t.value; $('#rosterList').innerHTML = rosterListHtml(); }
+});
+
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if (!e.target.closest('.search')) closeSuggest();
+  if (!t) return;
+  const a = t.dataset.act, n = t.dataset.name;
+  if (a === 'pick') selectName(n);
+  else if (a === 'swapFor') { pickMe(n); S.tab = 'swap'; render(); window.scrollTo(0, 0); }
+  else if (a === 'copyTT') {
+    const txt = timetableText(n);
+    try { navigator.clipboard.writeText(txt).then(() => toast('Timetable copied.'), () => toast('Your browser blocked copying.')); } catch (err) { toast('Your browser blocked copying.'); }
+  }
+  else if (a === 'tab') window.scrollTo(0, 0);
+});
+document.addEventListener('input', e => {
+  if (e.target.id !== 'hq') return;
+  S.hq = e.target.value; S.sug = suggest(S.hq); S.si = S.sug.length ? 0 : -1; showSuggest();
+  if (!S.hq.trim() && S.home) { S.home = ''; $('#view').innerHTML = viewHome(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.target.id !== 'hq') return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); if (S.sug.length) { S.si = Math.min(S.sug.length - 1, S.si + 1); showSuggest(); } }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); if (S.sug.length) { S.si = Math.max(0, S.si - 1); showSuggest(); } }
+  else if (e.key === 'Enter') { e.preventDefault(); if (S.sug.length) selectName(S.sug[Math.max(0, S.si)].n); }
+  else if (e.key === 'Escape') closeSuggest();
+});
+
+/* merges confirmed by Yani */
+[['p1','SURYANI'],['p2','DR MOHAMMAD SHIHAM'],['p3','MOHD SYAFIQ'],['p4','JEREMIAH D'],['p5','SAKEENA'],['p6','NOOR ASYIKIN A']].forEach(x => applyMerge(PAIRS.find(p => p.id === x[0]), x[1]));
+['p14','p15','p16'].forEach(id => { S.decisions[id] = { t: 'separate' }; });
+pickMe('');
+render();
+</script>
+</body></html>
